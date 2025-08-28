@@ -8,13 +8,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.ollamaserverapp.model.*
+import com.example.ollamaserverapp.algorithm.*
+
 
 data class ChatUiState(
     val input: String = "",
-    val messages: List<Message> = emptyList(),
-    val isSending: Boolean = false,
+    val entries: List<JournalEntry> = emptyList(),
+    val isAnalyzing: Boolean = false,
+    val error: String? = null,
     val models: List<String> = emptyList(),
-    val selectedModel: String? = null
+    val selectedModel: String? = null,
+    val sortMethod: String = "Bubble",              // set defalut sort method
+    val searchMethod: String = "BinaryTree",
+    val highlightedIds: Set<String> = emptySet()
 )
 
 class ChatViewModel(
@@ -30,19 +36,27 @@ class ChatViewModel(
 
     fun send() {
         val prompt = _uiState.value.input.trim()
-        if (prompt.isEmpty() || _uiState.value.isSending) return
+        if (prompt.isEmpty() || _uiState.value.isAnalyzing) return
 
         _uiState.value = _uiState.value.copy(
-            isSending = true,
-            input = "",
-            messages = _uiState.value.messages + Message(Role.You, prompt)
+            isAnalyzing = true,
+            input = ""
         )
 
         viewModelScope.launch {
-            val res = repo.sendPrompt(_uiState.value.selectedModel ?: "", prompt, stream = false)
+            val (emotion, advice) = repo.analyzeJournal(
+                prompt,
+                _uiState.value.selectedModel ?: "gemma:2b"
+            )
+            val newEntry = JournalEntry(
+                text = prompt,
+                emotion = emotion,
+                advice = advice
+            )
+
             _uiState.value = _uiState.value.copy(
-                isSending = false,
-                messages = _uiState.value.messages + Message(Role.Bot, res)
+                isAnalyzing = false,
+                entries = _uiState.value.entries + newEntry
             )
         }
     }
@@ -52,7 +66,7 @@ class ChatViewModel(
             val list = repo.getModels()
             _uiState.value = _uiState.value.copy(
                 models = list,
-                selectedModel = list.firstOrNull() // 默认选第一个
+                selectedModel = list.firstOrNull() //select first model
             )
         }
     }
@@ -61,4 +75,34 @@ class ChatViewModel(
         Log.d("OllamaDebug", " Sending prompt to $model ... at ${System.currentTimeMillis()}")
         _uiState.value = _uiState.value.copy(selectedModel = model)
     }
+
+    fun onSortMethodSelected(name: String) {
+        _uiState.value = _uiState.value.copy(sortMethod = name)
+    }
+
+    fun sortEntries() {
+        val cur = _uiState.value
+        val sorted = when (cur.sortMethod) {
+            "Insertion" -> insertionSort(cur.entries)
+            "Selection" -> selectionSort(cur.entries)
+            else -> bubbleSort(cur.entries)
+        }
+        _uiState.value = cur.copy(entries = sorted)
+    }
+
+    fun onSearchMethodSelected(name: String) {
+        _uiState.value = _uiState.value.copy(searchMethod = name)
+    }
+
+    fun searchByEmotion(target: Emotion) {
+        val cur = _uiState.value
+        val ids: Set<String> = when (cur.searchMethod) {
+            "HashMap" -> hashMapSearchIds(cur.entries, target)
+            "DoublyLinkedList" -> doublyLinkedListSearchIds(cur.entries, target)
+            else -> binaryTreeSearchIds(cur.entries, target)
+        }
+        _uiState.value = cur.copy(highlightedIds = ids)
+    }
+
+
 }

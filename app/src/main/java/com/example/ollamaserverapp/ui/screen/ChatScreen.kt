@@ -26,6 +26,7 @@ fun ChatScreen(vm: ChatViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .imePadding()
     ) {
 
         // dropdown box to choose model.
@@ -80,42 +81,154 @@ fun ChatScreen(vm: ChatViewModel) {
 
         Spacer(Modifier.height(12.dp))
 
-        // text box
+        // write journal
         OutlinedTextField(
             value = state.input,
             onValueChange = vm::onInputChange,
-            label = { Text("Ask anything") },
+            label = { Text("Write your journal") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isSending
+            minLines = 6,
+            maxLines= 15,
+            enabled = !state.isAnalyzing
         )
 
         Spacer(Modifier.height(12.dp))
 
-        // send button
-        LaunchedEffect(state.isSending, elapsed) {
-            if (state.isSending) {
-                delay(1000)
-                elapsed++
+        LaunchedEffect(state.isAnalyzing) {
+            if (state.isAnalyzing) {
+                elapsed = 0
+                while (true) {
+                    delay(1000)
+                    elapsed++
+                }
             }
         }
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Button(
                 onClick = vm::send,
-                enabled = !state.isSending,
+                enabled = !state.isAnalyzing,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
                 )
             ) {
-                Text(if (state.isSending) "Sending..." else "Send to Ollama")
-            }
-            if (state.isSending) {
-                Spacer(Modifier.width(8.dp))
-                Text("${elapsed}s")
+                Text(if (state.isAnalyzing) "Analyzing..." else "Analyze")
+                if (state.isAnalyzing) {
+                    Spacer(Modifier.width(8.dp))
+                    Text("${elapsed}s")
+                }
             }
         }
 
         Spacer(Modifier.height(12.dp))
+
+// --- Sort controls ---
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            var sortMenu by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = sortMenu,
+                onExpandedChange = { sortMenu = it }
+            ) {
+                OutlinedTextField(
+                    value = state.sortMethod,
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Sort Method") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = sortMenu) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .weight(1f)
+                )
+                ExposedDropdownMenu(
+                    expanded = sortMenu,
+                    onDismissRequest = { sortMenu = false }
+                ) {
+                    listOf("Bubble", "Insertion", "Selection").forEach { m ->
+                        DropdownMenuItem(text = { Text(m) }, onClick = {
+                            vm.onSortMethodSelected(m); sortMenu = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = vm::sortEntries) { Text("Sort") }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+// --- Search controls ---
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            var searchMenu by remember { mutableStateOf(false) }
+            var emotionMenu by remember { mutableStateOf(false) }
+
+            // Search method dropdown
+            ExposedDropdownMenuBox(
+                expanded = searchMenu,
+                onExpandedChange = { searchMenu = it }
+            ) {
+                OutlinedTextField(
+                    value = state.searchMethod,
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Search Method") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = searchMenu) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .weight(1f)
+                )
+                ExposedDropdownMenu(
+                    expanded = searchMenu,
+                    onDismissRequest = { searchMenu = false }
+                ) {
+                    listOf("BinaryTree", "HashMap", "DoublyLinkedList").forEach { m ->
+                        DropdownMenuItem(text = { Text(m) }, onClick = {
+                            vm.onSearchMethodSelected(m); searchMenu = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+
+            // Target emotion dropdown
+            var targetEmotion by remember { mutableStateOf("JOY") }
+            ExposedDropdownMenuBox(
+                expanded = emotionMenu,
+                onExpandedChange = { emotionMenu = it }
+            ) {
+                OutlinedTextField(
+                    value = targetEmotion,
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Target Emotion") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = emotionMenu) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .weight(1f)
+                )
+                ExposedDropdownMenu(
+                    expanded = emotionMenu,
+                    onDismissRequest = { emotionMenu = false }
+                ) {
+                    listOf("JOY","SADNESS","ANGER","FEAR","DISGUST","SURPRISE","NEUTRAL").forEach { e ->
+                        DropdownMenuItem(text = { Text(e) }, onClick = {
+                            targetEmotion = e; emotionMenu = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = {
+                emotionFromString(targetEmotion)?.let { vm.searchByEmotion(it) }
+            }) { Text("Search") }
+        }
+
 
         // message list
         LazyColumn(
@@ -124,18 +237,26 @@ fun ChatScreen(vm: ChatViewModel) {
                 .fillMaxWidth(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            items(state.messages) { message ->
-                Row {
-                    Text(
-                        text = if (message.role == Role.You) "You:" else "Bot:",
-                        fontWeight = FontWeight.Bold,
-                        color = if (message.role == Role.You)
-                            MaterialTheme.colorScheme.secondary
+            items(state.entries) {
+                entry ->
+                val isHit = state.highlightedIds.contains(entry.id)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isHit)
+                            MaterialTheme.colorScheme.tertiaryContainer
                         else
-                            MaterialTheme.colorScheme.tertiary
+                            MaterialTheme.colorScheme.surfaceVariant
                     )
-                    Spacer(Modifier.width(4.dp))
-                    Text(message.content)
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text("📝 ${entry.text}")
+                        Spacer(Modifier.height(4.dp))
+                        Text("Emotion: ${entry.emotion} ${entry.emotion?.emoji() ?: ""}", fontWeight = FontWeight.Bold) // add entry emotion
+                        Text("Advice: ${entry.advice}")
+                    }
                 }
             }
         }
