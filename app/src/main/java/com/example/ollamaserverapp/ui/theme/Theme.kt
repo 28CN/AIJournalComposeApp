@@ -69,9 +69,9 @@ private val LuxGreenGoldDark = darkColorScheme(
 )
 
 enum class AppPalette {
-    Default,            // 保留原默认
-    ElegantIvoryBlue,   // 新方案 A
-    LuxGreenGold        // 新方案 B
+    Default,            //
+    ElegantIvoryBlue,   // new theme A
+    LuxGreenGold        // theme B
 }
 
     /* Other default colors to override

@@ -82,3 +82,20 @@ fun doublyLinkedListSearchIds(entries: List<JournalEntry>, target: Emotion): Set
     }
     return ids
 }
+
+// Public helpers to get indices instead of ids
+fun binaryTreeFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
+    val ids = binaryTreeSearchIds(entries, target)
+    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
+}
+
+fun hashFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
+    val ids = hashMapSearchIds(entries, target)
+    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
+}
+
+fun dllFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
+    val ids = doublyLinkedListSearchIds(entries, target)
+    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
+}
+

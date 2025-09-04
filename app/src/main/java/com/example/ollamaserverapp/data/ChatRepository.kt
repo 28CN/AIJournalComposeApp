@@ -53,7 +53,7 @@ class ChatRepository(
 
     suspend fun analyzeJournal(
         prompt: String,
-        model: String = "gemma:2b" // 或者把 selectedModel 传进来
+        model: String = "gemma:2b" // or selectedModel
     ): Pair<Emotion, String> = withContext(Dispatchers.IO) {
         // ✅ 发送后端期望的 OllamaRequest 结构
         val json = JSONObject().apply {

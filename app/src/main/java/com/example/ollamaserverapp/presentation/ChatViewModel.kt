@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.ollamaserverapp.model.*
 import com.example.ollamaserverapp.algorithm.*
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import java.util.UUID
 
 
 data class ChatUiState(
@@ -30,6 +33,8 @@ class ChatViewModel(
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState
 
+
+
     fun onInputChange(text: String) {
         _uiState.value = _uiState.value.copy(input = text)
     }
@@ -38,26 +43,34 @@ class ChatViewModel(
         val prompt = _uiState.value.input.trim()
         if (prompt.isEmpty() || _uiState.value.isAnalyzing) return
 
+        val model = _uiState.value.selectedModel ?: "gemma:2b"
+
         _uiState.value = _uiState.value.copy(
             isAnalyzing = true,
             input = ""
         )
 
         viewModelScope.launch {
-            val (emotion, advice) = repo.analyzeJournal(
-                prompt,
-                _uiState.value.selectedModel ?: "gemma:2b"
-            )
-            val newEntry = JournalEntry(
-                text = prompt,
-                emotion = emotion,
-                advice = advice
-            )
+            try {
+                val (emotion, advice) = repo.analyzeJournal(
+                    prompt = prompt,
+                    model = model
+                )
 
-            _uiState.value = _uiState.value.copy(
-                isAnalyzing = false,
-                entries = _uiState.value.entries + newEntry
-            )
+                val newEntry = JournalEntry(
+                    id = UUID.randomUUID().toString(),
+                    text = prompt,
+                    emotion = emotion,
+                    advice = advice
+                )
+
+                _uiState.value = _uiState.value.copy(
+                    isAnalyzing = false,
+                    entries = _uiState.value.entries + newEntry
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isAnalyzing = false)
+            }
         }
     }
 
@@ -80,14 +93,15 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(sortMethod = name)
     }
 
+
     fun sortEntries() {
-        val cur = _uiState.value
-        val sorted = when (cur.sortMethod) {
-            "Insertion" -> insertionSort(cur.entries)
-            "Selection" -> selectionSort(cur.entries)
-            else -> bubbleSort(cur.entries)
+        val sorted = when (_uiState.value.sortMethod) {
+            "Bubble" -> bubbleSort(_uiState.value.entries)
+            "Insertion" -> insertionSort(_uiState.value.entries)
+            "Selection" -> selectionSort(_uiState.value.entries)
+            else -> _uiState.value.entries
         }
-        _uiState.value = cur.copy(entries = sorted)
+        _uiState.value = _uiState.value.copy(entries = sorted)
     }
 
     fun onSearchMethodSelected(name: String) {
@@ -95,14 +109,18 @@ class ChatViewModel(
     }
 
     fun searchByEmotion(target: Emotion) {
-        val cur = _uiState.value
-        val ids: Set<String> = when (cur.searchMethod) {
-            "HashMap" -> hashMapSearchIds(cur.entries, target)
-            "DoublyLinkedList" -> doublyLinkedListSearchIds(cur.entries, target)
-            else -> binaryTreeSearchIds(cur.entries, target)
+        val entries = _uiState.value.entries
+        val matchIds = when (_uiState.value.searchMethod) {
+            "BinaryTree" -> binaryTreeSearchIds(entries, target)
+            "HashMap" -> hashMapSearchIds(entries, target)
+            "DoublyLinkedList" -> doublyLinkedListSearchIds(entries, target)
+            else -> emptySet()
         }
-        _uiState.value = cur.copy(highlightedIds = ids)
+        _uiState.value = _uiState.value.copy(highlightedIds = matchIds)
     }
 
-
+    fun deleteEntry(id: String) {
+        val cur = _uiState.value
+        _uiState.value = cur.copy(entries = cur.entries.filterNot { it.id == id })
+    }
 }
