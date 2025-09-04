@@ -168,11 +168,10 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
         Spacer(Modifier.height(16.dp))
 
         // --- Journal List + TrashBar ---
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f).fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 88.dp),
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(ui.entries, key = { it.id }) { entry ->
@@ -190,6 +189,7 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
                     .fillMaxWidth()
                     .height(72.dp)
                     .align(Alignment.BottomCenter)
+                    .zIndex(2f)
                     .onGloballyPositioned { coords ->
                         val p = coords.positionInRoot()
                         val s = coords.size
