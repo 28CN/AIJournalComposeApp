@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HelpScreen() {
-    // Loads assets/help.html (create assets/help.html later)
+    // Loads assets/help.html
     AndroidView(
         factory = { context ->
             WebView(context).apply {

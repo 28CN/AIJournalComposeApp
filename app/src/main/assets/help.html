@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>AI Journal Companion — Help</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 16px; line-height: 1.5; }
+        h1,h2 { margin: 0 0 8px; }
+        h1 { font-size: 20px; }
+        h2 { font-size: 16px; margin-top: 18px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; }
+        ul{ padding-left: 18px; margin: 6px 0; }
+        code{ background:#f5f5f5; padding:2px 4px; border-radius:4px; }
+        .tip{ font-size: 12px; color:#666; }
+    </style>
+</head>
+<body>
+<h1>AI Journal Companion — Help</h1>
+<p>This page explains how to use the app and what each feature does. It runs fully offline except for your local API (FastAPI + Ollama) on your computer.</p>
+
+<div class="card">
+    <h2>1. Write & Analyze</h2>
+    <ul>
+        <li>Open <b>Write</b> tab.</li>
+        <li>Choose a model (e.g., <code>gemma:2b</code>) from the dropdown.</li>
+        <li>Enter your journal text and tap <b>Analyze</b>.</li>
+        <li>The app sends your text to the local backend and shows:
+            <ul>
+                <li><b>Emotion</b> (JOY / SADNESS / ANGER / FEAR / DISGUST / SURPRISE / NEUTRAL)</li>
+                <li><b>Advice</b> (one line)</li>
+            </ul>
+        </li>
+    </ul>
+    <p class="tip">If nothing returns, check your backend is running (FastAPI) and the emulator can reach <code>http://10.0.2.2:8080</code>.</p>
+</div>
+
+<div class="card">
+    <h2>2. Sort</h2>
+    <ul>
+        <li>Open <b>History</b> tab, pick a method: <b>Bubble</b>, <b>Insertion</b> or <b>Selection</b>.</li>
+        <li>Tap <b>Sort</b> to reorder entries by emotion (A→Z by emotion code).</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>3. Search</h2>
+    <ul>
+        <li>In <b>History</b>, choose a search method:
+            <b>BinaryTree</b>, <b>HashMap</b>, or <b>DoublyLinkedList</b>.</li>
+        <li>Select <b>Target Emotion</b> (e.g., JOY) and tap <b>Search</b>.</li>
+        <li>Matched entries are highlighted.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>4. Drag & Delete</h2>
+    <ul>
+        <li>Press and drag a journal card.</li>
+        <li>Drop it onto the bottom <b>Drag here to delete</b> bar to remove.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>5. Chart</h2>
+    <ul>
+        <li>Open <b>Chart</b> tab to view a pie chart of emotion distribution.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>6. Backend Setup (Quick)</h2>
+    <ul>
+        <li>Run your FastAPI/Ktor on your PC (port <code>8080</code>), ensure Ollama model is available.</li>
+        <li>Android emulator reaches your host by <code>http://10.0.2.2:8080</code>.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>FAQ</h2>
+    <ul>
+        <li><b>No response?</b> Confirm backend is up; check port and firewall.</li>
+        <li><b>Error 422?</b> The model output was not valid JSON. Try again or switch a model.</li>
+        <li><b>Which emotions are supported?</b> JOY, SADNESS, ANGER, FEAR, DISGUST, SURPRISE, NEUTRAL.</li>
+    </ul>
+</div>
+
+<p class="tip">Privacy: Your text is sent only to your local API on the same machine.</p>
+</body>
+</html>

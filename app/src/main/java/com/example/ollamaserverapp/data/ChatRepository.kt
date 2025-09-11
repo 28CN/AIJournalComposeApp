@@ -41,13 +41,13 @@ class ChatRepository(
             client.newCall(request).execute().use { resp ->
                 val resBody = resp.body?.string()
                 if (resp.isSuccessful && resBody != null) {
-                    JSONObject(resBody).optString("response", "⚠ Missing 'response'")
+                    JSONObject(resBody).optString("response", "Error: Missing 'response'")
                 } else {
-                    "⚠ Error: ${resp.code}\n${resBody ?: "no body"}"
+                    "Error: ${resp.code}\n${resBody ?: "no body"}"
                 }
             }
         } catch (e: Exception) {
-            "⚠ Exception: ${e.message ?: "unknown error"}"
+            "Exception: ${e.message ?: "unknown error"}"
         }
     }
 
@@ -55,7 +55,7 @@ class ChatRepository(
         prompt: String,
         model: String = "gemma:2b" // or selectedModel
     ): Pair<Emotion, String> = withContext(Dispatchers.IO) {
-        // ✅ 发送后端期望的 OllamaRequest 结构
+        // 发送后端期望的 OllamaRequest 结构?????????????
         val json = JSONObject().apply {
             put("model", model)
             put("prompt", prompt)

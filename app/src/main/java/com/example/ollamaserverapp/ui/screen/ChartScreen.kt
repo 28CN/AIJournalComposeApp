@@ -55,7 +55,7 @@ fun ChartScreen(vm: ChatViewModel = viewModel()) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Chart", style = MaterialTheme.typography.titleMedium)
+        Text("Emotion Frequency Chart", style = MaterialTheme.typography.titleMedium)
 
         Canvas(
             modifier = Modifier
