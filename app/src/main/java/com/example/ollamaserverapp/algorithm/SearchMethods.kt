@@ -3,7 +3,7 @@ import com.example.ollamaserverapp.model.Emotion
 import com.example.ollamaserverapp.model.JournalEntry
 
 
-// ---------- Binary Tree ----------
+// Binary Tree
 private class BstNode(
     val key: Emotion,
     val ids: MutableList<String> = mutableListOf(),
@@ -11,6 +11,7 @@ private class BstNode(
     var right: BstNode? = null
 )
 
+// Insert one (emotion, id) into the BST; group IDs when emotion matches
 private fun bstInsert(root: BstNode?, key: Emotion, id: String): BstNode {
     if (root == null) return BstNode(key, mutableListOf(id))
     when {
@@ -21,6 +22,7 @@ private fun bstInsert(root: BstNode?, key: Emotion, id: String): BstNode {
     return root
 }
 
+// find all ids for the searched emotion
 private fun bstFind(root: BstNode?, key: Emotion): List<String> {
     var cur = root
     while (cur != null) {
@@ -36,23 +38,23 @@ private fun bstFind(root: BstNode?, key: Emotion): List<String> {
 fun binaryTreeSearchIds(entries: List<JournalEntry>, target: Emotion): Set<String> {
     var root: BstNode? = null
     for (e in entries) {
-        val k = e.emotion ?: Emotion.NEUTRAL
+        val k = e.emotion ?: Emotion.UNKNOWN
         root = bstInsert(root, k, e.id)
     }
     return bstFind(root, target).toSet()
 }
 
-// ---------- HashMap ----------
+//  HashMap
 fun hashMapSearchIds(entries: List<JournalEntry>, target: Emotion): Set<String> {
     val map = mutableMapOf<Emotion, MutableList<String>>()
     for (e in entries) {
-        val k = e.emotion ?: Emotion.NEUTRAL
+        val k = e.emotion ?: Emotion.UNKNOWN
         map.getOrPut(k) { mutableListOf() }.add(e.id)
     }
     return map[target]?.toSet() ?: emptySet()
 }
 
-// ---------- Doubly Linked List ----------
+// Doubly Linked List
 private class DNode(val entry: JournalEntry) {
     var prev: DNode? = null
     var next: DNode? = null
@@ -76,26 +78,11 @@ fun doublyLinkedListSearchIds(entries: List<JournalEntry>, target: Emotion): Set
     val ids = mutableSetOf<String>()
     var cur = head
     while (cur != null) {
-        val k = cur.entry.emotion ?: Emotion.NEUTRAL
+        val k = cur.entry.emotion ?: Emotion.UNKNOWN
         if (k == target) ids.add(cur.entry.id)
         cur = cur.next
     }
     return ids
 }
 
-// Public helpers to get indices instead of ids
-fun binaryTreeFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
-    val ids = binaryTreeSearchIds(entries, target)
-    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
-}
-
-fun hashFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
-    val ids = hashMapSearchIds(entries, target)
-    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
-}
-
-fun dllFindIndices(entries: List<JournalEntry>, target: Emotion): List<Int> {
-    val ids = doublyLinkedListSearchIds(entries, target)
-    return entries.withIndex().filter { ids.contains(it.value.id) }.map { it.index }
-}
 

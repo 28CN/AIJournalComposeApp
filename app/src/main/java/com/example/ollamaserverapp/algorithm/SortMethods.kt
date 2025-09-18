@@ -4,7 +4,7 @@ import com.example.ollamaserverapp.model.JournalEntry
 
 // Return a comparable string from emotion
 private fun JournalEntry.emotionKey(): String =
-    (emotion ?: Emotion.NEUTRAL).name
+    (emotion ?: Emotion.UNKNOWN).name
 
 // Bubble Sort
 fun bubbleSort(list: List<JournalEntry>): List<JournalEntry> {

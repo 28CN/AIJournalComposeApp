@@ -44,7 +44,7 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // --- Sort row ---
+        //  Sort row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -86,7 +86,7 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
 
         Spacer(Modifier.height(12.dp))
 
-        // --- Search method row ---
+        //  Search method row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -125,7 +125,7 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
 
         Spacer(Modifier.height(8.dp))
 
-        // --- Target emotion row ---
+        //  Target emotion row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -167,7 +167,7 @@ fun HistoryScreen(vm: ChatViewModel = viewModel()) {
 
         Spacer(Modifier.height(16.dp))
 
-        // --- Journal List + TrashBar ---
+        //  Journal List + TrashBar
         Box(Modifier.weight(1f).fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier

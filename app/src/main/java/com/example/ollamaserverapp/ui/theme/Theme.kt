@@ -88,7 +88,6 @@ enum class AppPalette {
 @Composable
 fun OllamaServerAppTheme(
     palette: AppPalette = AppPalette.ElegantIvoryBlue, //default theme
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit

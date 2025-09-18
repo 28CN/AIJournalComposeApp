@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.ollamaserverapp.model.*
 import com.example.ollamaserverapp.algorithm.*
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import java.util.UUID
 
 
@@ -34,11 +32,12 @@ class ChatViewModel(
     val uiState: StateFlow<ChatUiState> = _uiState
 
 
-
+    // Update the input text from UI
     fun onInputChange(text: String) {
         _uiState.value = _uiState.value.copy(input = text)
     }
 
+    // call backend; on success append a new entry; on failure stop loading
     fun send() {
         val prompt = _uiState.value.input.trim()
         if (prompt.isEmpty() || _uiState.value.isAnalyzing) return
@@ -58,7 +57,7 @@ class ChatViewModel(
                 )
 
                 val newEntry = JournalEntry(
-                    id = UUID.randomUUID().toString(),
+                    // id = UUID.randomUUID().toString(), --could be removed--
                     text = prompt,
                     emotion = emotion,
                     advice = advice
@@ -74,26 +73,29 @@ class ChatViewModel(
         }
     }
 
+    // get available models.
     fun loadModels() {
         viewModelScope.launch {
             val list = repo.getModels()
             _uiState.value = _uiState.value.copy(
                 models = list,
-                selectedModel = list.firstOrNull() //select first model
+                selectedModel = list.firstOrNull() //select first model by default
             )
         }
     }
 
+    // store the chosen model for requests
     fun onModelSelected(model: String) {
         Log.d("OllamaDebug", " Sending prompt to $model ... at ${System.currentTimeMillis()}")
         _uiState.value = _uiState.value.copy(selectedModel = model)
     }
 
+    // Update the chosen sorting algorithm name
     fun onSortMethodSelected(name: String) {
         _uiState.value = _uiState.value.copy(sortMethod = name)
     }
 
-
+    // Apply the chosen sorting algorithm to entries and update state
     fun sortEntries() {
         val sorted = when (_uiState.value.sortMethod) {
             "Bubble" -> bubbleSort(_uiState.value.entries)
@@ -104,10 +106,12 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(entries = sorted)
     }
 
+    // Update the chosen searching strategy name
     fun onSearchMethodSelected(name: String) {
         _uiState.value = _uiState.value.copy(searchMethod = name)
     }
 
+    // Run the selected search strategy and collect matching IDs
     fun searchByEmotion(target: Emotion) {
         val entries = _uiState.value.entries
         val matchIds = when (_uiState.value.searchMethod) {
@@ -119,6 +123,7 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(highlightedIds = matchIds)
     }
 
+    // Remove one entry by ID (for drag to delete function)
     fun deleteEntry(id: String) {
         val cur = _uiState.value
         _uiState.value = cur.copy(entries = cur.entries.filterNot { it.id == id })

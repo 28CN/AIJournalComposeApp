@@ -18,48 +18,15 @@ class ChatRepository(
         .readTimeout(300, TimeUnit.SECONDS)
         .build()
 
-
-    suspend fun sendPrompt(
-        model: String,
-        prompt: String,
-        stream: Boolean = false
-    ): String = withContext(Dispatchers.IO) {
-        val json = JSONObject().apply {
-            put("model", model)
-            put("prompt", prompt)
-            put("stream", stream)
-        }
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val body = json.toString().toRequestBody(mediaType)
-
-        val request = Request.Builder()
-            .url("$baseUrl/chat")
-            .post(body)
-            .build()
-
-        try {
-            client.newCall(request).execute().use { resp ->
-                val resBody = resp.body?.string()
-                if (resp.isSuccessful && resBody != null) {
-                    JSONObject(resBody).optString("response", "Error: Missing 'response'")
-                } else {
-                    "Error: ${resp.code}\n${resBody ?: "no body"}"
-                }
-            }
-        } catch (e: Exception) {
-            "Exception: ${e.message ?: "unknown error"}"
-        }
-    }
-
     suspend fun analyzeJournal(
         prompt: String,
         model: String = "gemma:2b" // or selectedModel
     ): Pair<Emotion, String> = withContext(Dispatchers.IO) {
-        // 发送后端期望的 OllamaRequest 结构?????????????
+        // Send the expected OllamaRequest structure to the backend
         val json = JSONObject().apply {
             put("model", model)
             put("prompt", prompt)
-            put("stream", false) // 非流式，便于一次性拿完整 JSON
+            put("stream", false)
         }
         val body = json.toString()
             .toRequestBody("application/json; charset=utf-8".toMediaType())
@@ -69,6 +36,7 @@ class ChatRepository(
             .post(body)
             .build()
 
+        // Send journal entry to backend for emotion analysis
         try {
             client.newCall(request).execute().use { resp ->
                 val text = resp.body?.string().orEmpty()
@@ -78,18 +46,19 @@ class ChatRepository(
                     val emo = obj.getString("emotion").uppercase()
                     val adv = obj.getString("advice")
                     val parsed = runCatching { Emotion.valueOf(emo) }
-                        .getOrDefault(Emotion.NEUTRAL)
+                        .getOrDefault(Emotion.UNKNOWN)
                     parsed to adv
                 } else {
-                    // 把错误透传到 UI，便于你区分是 422（AI没按格式）
-                    Emotion.NEUTRAL to "HTTP ${resp.code}\n${text.ifBlank { "no body" }}"
+                    // Pass the error through to the UI to check if it's 422 error.
+                    Emotion.UNKNOWN to "HTTP ${resp.code}\n${text.ifBlank { "no body" }}"
                 }
             }
         } catch (e: Exception) {
-            Emotion.NEUTRAL to "EXCEPTION: ${e.message ?: "unknown"}"
+            Emotion.UNKNOWN to "EXCEPTION: ${e.message ?: "unknown"}"
         }
     }
 
+    // get models list
     suspend fun getModels(): List<String> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url("$baseUrl/models")
@@ -100,7 +69,7 @@ class ChatRepository(
             client.newCall(request).execute().use { resp ->
                 val resBody = resp.body?.string()
                 if (resp.isSuccessful && resBody != null) {
-                    // 简单解析成 List<String>
+                    // List<String>
                     val jsonArray = org.json.JSONArray(resBody)
                     List(jsonArray.length()) { i -> jsonArray.getString(i) }
                 } else {
@@ -108,7 +77,7 @@ class ChatRepository(
                 }
             }
         } catch (e: Exception) {
-            emptyList()
+            return@withContext emptyList()
         }
     }
 }

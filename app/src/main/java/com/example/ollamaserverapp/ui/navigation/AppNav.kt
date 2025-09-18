@@ -1,4 +1,4 @@
-package com.example.ollamaserverapp.ui
+package com.example.ollamaserverapp.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*

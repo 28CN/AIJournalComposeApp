@@ -45,7 +45,7 @@ fun WriteScreen(vm: ChatViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        // --- Model selector ---
+        //  Model selector
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -79,7 +79,7 @@ fun WriteScreen(vm: ChatViewModel) {
             }
         }
 
-        // --- Journal input ---
+        // Journal input
         OutlinedTextField(
             value = state.input,
             onValueChange = vm::onInputChange,
@@ -90,7 +90,7 @@ fun WriteScreen(vm: ChatViewModel) {
             enabled = !state.isAnalyzing
         )
 
-        // --- Analyze button ---
+        // Analyze button
         Row(verticalAlignment = Alignment.CenterVertically) {
             Button(
                 onClick = vm::send,
@@ -108,7 +108,7 @@ fun WriteScreen(vm: ChatViewModel) {
             }
         }
 
-        // --- Result entries ---
+        //  Result entries
         LazyColumn(
             modifier = Modifier
                 .weight(1f)

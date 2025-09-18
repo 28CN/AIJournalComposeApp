@@ -9,4 +9,5 @@ data class JournalEntry(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-enum class Emotion { JOY, SADNESS, ANGER, FEAR, DISGUST, SURPRISE, NEUTRAL }
+//Fixed set of emotions - add UNKNOWN to handle null or error.
+enum class Emotion { JOY, SADNESS, ANGER, FEAR, DISGUST, SURPRISE, NEUTRAL, UNKNOWN }

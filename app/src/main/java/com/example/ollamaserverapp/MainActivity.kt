@@ -7,7 +7,7 @@ import androidx.compose.material3.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.ollamaserverapp.presentation.ChatViewModel
-import com.example.ollamaserverapp.ui.AppNav
+import com.example.ollamaserverapp.ui.navigation.AppNav
 import com.example.ollamaserverapp.ui.theme.AppPalette
 import com.example.ollamaserverapp.ui.theme.OllamaServerAppTheme
 
