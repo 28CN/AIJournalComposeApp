@@ -20,16 +20,13 @@ Access a Help page with basic instructions
 2. Installation
 Option A: Run from Android Studio
 
-Clone the GitHub repository:
-
-git clone https://github.com/28CN/AIJournalComposeApp
-
+Clone this GitHub repository
 
 Open the project in Android Studio.
 
 Connect an Android device or use the emulator.
 
-Run the app with Run ▶ button.
+Run the app with Run button.
 
 Option B: Install APK (if provided)
 
